@@ -1,0 +1,791 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: ResumeAI - AI-powered resume tailoring and cover letter generation
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: Auth
+    description: Browser and mobile authentication endpoints.
+  - name: resumes
+    description: Resume management
+  - name: analyses
+    description: AI resume analyses
+  - name: dashboard
+    description: Dashboard summaries
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserEnvelope'
+
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the browser OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the OIDC authorization endpoint.
+
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: iss
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+      responses:
+        '302':
+          description: Redirect after login.
+
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: Clear the session and begin OIDC logout
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '302':
+          description: Redirect to the OIDC provider logout URL.
+
+  /mobile-auth/token-exchange:
+    post:
+      tags: [Auth]
+      operationId: exchangeMobileAuthorizationCode
+      summary: Exchange a mobile OIDC code for a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileTokenExchangeRequest'
+      responses:
+        '200':
+          description: Session created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenExchangeSuccess'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Token did not contain usable claims.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Token exchange failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  /mobile-auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logoutMobileSession
+      summary: Delete a mobile session token
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+      responses:
+        '200':
+          description: Logout processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutSuccess'
+
+  /user/settings:
+    get:
+      operationId: getUserSettings
+      tags: [auth]
+      summary: Get user profile and settings
+      responses:
+        "200":
+          description: User settings found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+
+    patch:
+      operationId: updateUserSettings
+      tags: [auth]
+      summary: Update user profile and settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+      responses:
+        "200":
+          description: User settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+
+  /resumes:
+    get:
+      operationId: listResumes
+      tags: [resumes]
+      summary: List all resumes for the authenticated user
+      responses:
+        "200":
+          description: List of resumes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resume"
+        "401":
+          description: Not authenticated
+
+    post:
+      operationId: createResume
+      tags: [resumes]
+      summary: Create a new resume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateResumeBody"
+      responses:
+        "201":
+          description: Resume created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not authenticated
+
+  /resumes/extract:
+    post:
+      operationId: extractResumeText
+      tags: [resumes]
+      summary: Extract plain text from a resume file (PDF or Docx)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Text extracted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+        "400":
+          description: Invalid file or no text found
+        "500":
+          description: Extraction failed
+
+  /scrape/job:
+    post:
+      operationId: scrapeJobDescription
+      tags: [analyses]
+      summary: Extract job description text from a URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+      responses:
+        "200":
+          description: Text extracted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+        "400":
+          description: Invalid URL or no text found
+        "500":
+          description: Scraping failed
+
+  /resumes/{id}:
+    get:
+      operationId: getResume
+      tags: [resumes]
+      summary: Get a resume by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resume found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "404":
+          description: Resume not found
+
+    patch:
+      operationId: updateResume
+      tags: [resumes]
+      summary: Update a resume
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateResumeBody"
+      responses:
+        "200":
+          description: Resume updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "404":
+          description: Resume not found
+
+    delete:
+      operationId: deleteResume
+      tags: [resumes]
+      summary: Delete a resume
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Resume deleted
+        "404":
+          description: Resume not found
+
+  /analyses:
+    get:
+      operationId: listAnalyses
+      tags: [analyses]
+      summary: List analyses for the authenticated user
+      responses:
+        "200":
+          description: List of analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Analysis"
+        "401":
+          description: Not authenticated
+
+    post:
+      operationId: createAnalysis
+      tags: [analyses]
+      summary: Create a new AI analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnalysisBody"
+      responses:
+        "201":
+          description: Analysis created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not authenticated
+        "403":
+          description: Free plan limit reached
+
+  /analyses/{id}:
+    get:
+      operationId: getAnalysis
+      tags: [analyses]
+      summary: Get an analysis by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analysis found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "404":
+          description: Analysis not found
+
+    delete:
+      operationId: deleteAnalysis
+      tags: [analyses]
+      summary: Delete an analysis
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Analysis deleted
+        "404":
+          description: Analysis not found
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary stats for the authenticated user
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+        "401":
+          description: Not authenticated
+
+  /dashboard/recent-analyses:
+    get:
+      operationId: getRecentAnalyses
+      tags: [dashboard]
+      summary: Get recent analyses for the authenticated user
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recent analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Analysis"
+        "401":
+          description: Not authenticated
+
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: List all latest reviews
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Create a new review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewBody"
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not authenticated
+
+components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      description: Opaque session token — `Bearer <sid>`.
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      description: Browser session cookie.
+      schema:
+        type: string
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: '#/components/schemas/AuthUser'
+            - type: 'null'
+
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code:
+          type: string
+          minLength: 1
+        code_verifier:
+          type: string
+          minLength: 1
+        redirect_uri:
+          type: string
+          minLength: 1
+          format: uri
+        state:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+
+    MobileTokenExchangeSuccess:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+
+    LogoutSuccess:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          const: true
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    Resume:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        tag:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - title
+        - content
+        - tag
+        - createdAt
+        - updatedAt
+
+    CreateResumeBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        tag:
+          type: ["string", "null"]
+      required:
+        - title
+        - content
+
+    UpdateResumeBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        tag:
+          type: ["string", "null"]
+
+    Analysis:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        resumeId:
+          type: ["integer", "null"]
+        jobTitle:
+          type: string
+        companyName:
+          type: ["string", "null"]
+        jobDescription:
+          type: string
+        resumeContent:
+          type: string
+        matchScore:
+          type: integer
+        tailoredResume:
+          type: string
+        coverLetter:
+          type: string
+        keywordsMatched:
+          type: array
+          items:
+            type: string
+        keywordsMissing:
+          type: array
+          items:
+            type: string
+        interviewQuestions:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - resumeId
+        - jobTitle
+        - companyName
+        - jobDescription
+        - resumeContent
+        - matchScore
+        - tailoredResume
+        - coverLetter
+        - keywordsMatched
+        - keywordsMissing
+        - createdAt
+
+    CreateAnalysisBody:
+      type: object
+      properties:
+        resumeId:
+          type: ["integer", "null"]
+        jobTitle:
+          type: string
+        companyName:
+          type: ["string", "null"]
+        jobDescription:
+          type: string
+        resumeContent:
+          type: string
+      required:
+        - jobTitle
+        - jobDescription
+        - resumeContent
+
+    DashboardStats:
+      type: object
+      properties:
+        totalResumes:
+          type: integer
+        totalAnalyses:
+          type: integer
+        averageMatchScore:
+          type: integer
+        plan:
+          type: string
+        usageCount:
+          type: integer
+        usageLimit:
+          type: integer
+      required:
+        - totalResumes
+        - totalAnalyses
+        - averageMatchScore
+        - plan
+        - usageCount
+        - usageLimit
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        text:
+          type: string
+        score:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        profileImageUrl:
+          type: string
+      required:
+        - id
+        - name
+        - role
+        - text
+        - score
+        - createdAt
+
+    CreateReviewBody:
+      type: object
+      properties:
+        role:
+          type: string
+        text:
+          type: string
+        score:
+          type: integer
+      required:
+        - role
+        - text
+        - score
