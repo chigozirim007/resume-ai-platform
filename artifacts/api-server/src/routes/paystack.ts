@@ -149,11 +149,12 @@ router.get("/paystack/verify", async (req, res): Promise<void> => {
  * POST /api/paystack/webhook
  * Receives real-time events from Paystack (subscription renewals, cancellations).
  */
-router.post("/paystack/webhook", async (req, res): Promise<void> => {
+router.post("/paystack/webhook", async (req: any, res): Promise<void> => {
   const signature = req.headers["x-paystack-signature"] as string;
-  const rawBody = JSON.stringify(req.body);
+  const rawBody = req.rawBody || JSON.stringify(req.body);
 
   if (!validateWebhookSignature(rawBody, signature)) {
+    logger.warn({ signature }, "Invalid Paystack webhook signature rejected");
     res.status(401).json({ error: "Invalid signature" });
     return;
   }
@@ -177,8 +178,13 @@ router.post("/paystack/webhook", async (req, res): Promise<void> => {
       }
 
       case "subscription.disable":
-      case "subscription.notrenew": {
-        const subscriptionCode = event.data?.subscription_code as string;
+      case "subscription.notrenew":
+      case "charge.failed":
+      case "invoice.payment_failed": {
+        const data = event.data;
+        const subscriptionCode = data?.subscription_code || data?.subscription?.subscription_code;
+        const customerCode = data?.customer?.customer_code;
+
         if (subscriptionCode) {
           const [user] = await db
             .select()
@@ -190,7 +196,20 @@ router.post("/paystack/webhook", async (req, res): Promise<void> => {
               .update(usersTable)
               .set({ plan: "free", paystackSubscriptionCode: null })
               .where(eq(usersTable.id, user.id));
-            logger.info({ userId: user.id }, "User downgraded to Free via Paystack webhook");
+            logger.info({ userId: user.id, event: event.event }, "User downgraded to Free via Paystack webhook failure");
+          }
+        } else if (customerCode) {
+          const [user] = await db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.paystackCustomerCode, customerCode))
+            .limit(1);
+          if (user) {
+            await db
+              .update(usersTable)
+              .set({ plan: "free", paystackSubscriptionCode: null })
+              .where(eq(usersTable.id, user.id));
+            logger.info({ userId: user.id, event: event.event }, "User downgraded to Free via Paystack webhook customer lookup");
           }
         }
         break;

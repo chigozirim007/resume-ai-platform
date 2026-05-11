@@ -30,9 +30,18 @@ app.use(
 
 // Paystack webhook needs raw body for signature validation
 // The /api/paystack/webhook route handles its own raw body verification
+import { apiRateLimiter } from "./middlewares/rate-limiter";
+
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
-app.use(express.json());
+app.use(apiRateLimiter);
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf.toString();
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(authMiddleware);
 

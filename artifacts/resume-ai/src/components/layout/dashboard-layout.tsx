@@ -11,8 +11,9 @@ import {
   SidebarProvider,
   SidebarHeader,
   SidebarFooter,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Briefcase, LayoutDashboard, FileText, LogOut, Crosshair, Clock, Zap, CreditCard, Settings as SettingsIcon } from "lucide-react";
+import { Briefcase, LayoutDashboard, FileText, LogOut, Crosshair, Clock, Zap, CreditCard, Settings as SettingsIcon, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -44,18 +45,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isPro = (user as { plan?: string } | null)?.plan === "pro";
 
-  async function handleManageBilling() {
-    try {
-      const res = await fetch("/api/stripe/portal", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to open billing portal");
-      const { url } = await res.json() as { url: string };
-      window.location.href = url;
-    } catch {
-      // ignore
-    }
+  function handleManageBilling() {
+    // Redirect to settings for billing management since Paystack doesn't have a portal
+    window.location.href = "/settings";
   }
 
   return (
@@ -145,8 +137,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 flex flex-col h-[100dvh] overflow-y-auto">
-          {children}
+        <main className="flex-1 flex flex-col h-[100dvh] overflow-y-auto relative">
+          <div className="lg:hidden absolute top-4 left-4 z-50">
+            <SidebarTrigger>
+              <Button variant="outline" size="icon" className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border/50">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SidebarTrigger>
+          </div>
+          <div className="flex-1 lg:pt-0 pt-16">
+            {children}
+          </div>
         </main>
       </div>
 

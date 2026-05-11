@@ -30,26 +30,18 @@ export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     setLoading(true);
     setError(null);
     try {
-      // First, fetch the Pro plan price ID
-      const priceRes = await fetch("/api/stripe/pro-price", { credentials: "include" });
-      if (!priceRes.ok) {
-        throw new Error("Could not load pricing info. Please try again.");
-      }
-      const { priceId } = await priceRes.json() as { priceId: string };
-
-      // Create a Stripe Checkout session
-      const checkoutRes = await fetch("/api/stripe/checkout", {
+      const res = await fetch("/api/paystack/initialize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ priceId }),
       });
-      if (!checkoutRes.ok) {
-        const body = await checkoutRes.json() as { error?: string };
-        throw new Error(body.error ?? "Checkout failed. Please try again.");
+      
+      if (!res.ok) {
+        const body = await res.json() as { error?: string };
+        throw new Error(body.error ?? "Could not initialize payment. Please try again.");
       }
-      const { url } = await checkoutRes.json() as { url: string };
-      window.location.href = url;
+      
+      const { authorization_url } = await res.json() as { authorization_url: string };
+      window.location.href = authorization_url;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setLoading(false);
@@ -84,7 +76,7 @@ export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         </div>
 
         <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
-          <div className="text-3xl font-bold text-primary mb-0.5">$9<span className="text-base font-normal text-muted-foreground">/mo</span></div>
+          <div className="text-3xl font-bold text-primary mb-0.5">$15<span className="text-base font-normal text-muted-foreground">/mo</span></div>
           <p className="text-xs text-muted-foreground">Cancel anytime. No commitment.</p>
         </div>
 
@@ -103,7 +95,7 @@ export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
             ) : (
               <Zap className="h-4 w-4" />
             )}
-            {loading ? "Redirecting to checkout..." : "Upgrade to Pro — $9/mo"}
+            {loading ? "Redirecting to checkout..." : "Upgrade to Pro — $15/mo"}
           </Button>
           <Button variant="ghost" className="text-muted-foreground text-sm" onClick={onClose} disabled={loading}>
             Maybe later

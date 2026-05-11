@@ -7,6 +7,7 @@ import {
   verifySupabaseToken,
   jwtPayloadToAuthUser,
 } from "../lib/auth";
+import { logger } from "../lib/logger";
 
 declare global {
   namespace Express {
@@ -64,7 +65,6 @@ export async function authMiddleware(
         profileImageUrl: dbUser.profileImageUrl,
       };
     } else {
-      // Proactive Auto-Sync: User in Supabase but not in our DB
       try {
         const [newUser] = await db
           .insert(usersTable)
@@ -75,7 +75,16 @@ export async function authMiddleware(
             lastName: authUser.lastName,
             profileImageUrl: authUser.profileImageUrl,
           })
-          .onConflictDoNothing()
+          .onConflictDoUpdate({
+            target: usersTable.id,
+            set: {
+              email: authUser.email,
+              firstName: authUser.firstName,
+              lastName: authUser.lastName,
+              profileImageUrl: authUser.profileImageUrl,
+              updatedAt: new Date(),
+            },
+          })
           .returning();
         
         req.user = newUser ? {
@@ -85,8 +94,9 @@ export async function authMiddleware(
           lastName: newUser.lastName,
           profileImageUrl: newUser.profileImageUrl,
         } : authUser;
+        logger.info({ userId: authUser.id }, "User proactively synchronized in authMiddleware");
       } catch (err) {
-        console.error("Proactive sync failed in authMiddleware:", err);
+        logger.error({ userId: authUser.id, err }, "Proactive sync failed in authMiddleware");
         req.user = authUser;
       }
     }

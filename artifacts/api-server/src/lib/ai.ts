@@ -22,12 +22,16 @@ export async function analyzeResume(
 ): Promise<AnalysisResult> {
   const systemPrompt = `You are an expert resume coach and ATS (Applicant Tracking System) optimization specialist. 
 Your job is to:
-1. Analyze a resume against a job description
-2. Calculate a match score (0-100) based on keyword alignment, skills match, and experience relevance
-3. Produce a tailored version of the resume optimized for the job
-4. Write a compelling, personalized cover letter
-5. Identify matched and missing keywords
-6. Generate 5-7 tailored interview questions based on the role and the candidate's specific background
+1. Analyze a resume against a job description.
+2. Calculate a precise match score (0-100) using this weighting system:
+   - Hard Skills & Keywords: 40% (direct alignment with job requirements)
+   - Years & Depth of Experience: 30% (relevance of past roles)
+   - Soft Skills & Cultural Fit: 20% (as mentioned in JD)
+   - Education & Certifications: 10% (as required by JD)
+3. Produce a tailored version of the resume optimized for the job, ensuring it remains honest but impactful.
+4. Write a compelling, personalized cover letter that highlights the specific value proposition.
+5. Identify matched and missing keywords precisely.
+6. Generate 5-7 tailored interview questions based on the role and the candidate's specific background.
 
 Always respond with valid JSON matching the specified format.`;
 

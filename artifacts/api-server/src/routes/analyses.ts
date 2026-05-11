@@ -8,6 +8,8 @@ import {
 } from "@workspace/api-zod";
 import { analyzeResume } from "../lib/ai";
 
+import { aiRateLimiter } from "../middlewares/rate-limiter";
+
 const router: IRouter = Router();
 
 router.get("/analyses", async (req, res): Promise<void> => {
@@ -31,7 +33,7 @@ router.get("/analyses", async (req, res): Promise<void> => {
   );
 });
 
-router.post("/analyses", async (req, res): Promise<void> => {
+router.post("/analyses", aiRateLimiter, async (req, res): Promise<void> => {
   if (!req.isAuthenticated()) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -59,9 +61,8 @@ router.post("/analyses", async (req, res): Promise<void> => {
   }
 
   try {
-    const result = await analyzeResume(resumeContent, jobTitle, companyName, jobDescription);
-
-    const [analysis] = await db
+    // 1. Initialize analysis record with 'analyzing' status
+    const [initialAnalysis] = await db
       .insert(analysesTable)
       .values({
         userId,
@@ -70,6 +71,17 @@ router.post("/analyses", async (req, res): Promise<void> => {
         companyName: companyName ?? null,
         jobDescription,
         resumeContent,
+        status: "analyzing",
+      })
+      .returning();
+
+    // 2. Perform the actual AI analysis
+    const result = await analyzeResume(resumeContent, jobTitle, companyName, jobDescription);
+
+    // 3. Finalize with result data
+    const [finalAnalysis] = await db
+      .update(analysesTable)
+      .set({
         matchScore: result.matchScore,
         tailoredResume: result.tailoredResume,
         coverLetter: result.coverLetter,
@@ -78,6 +90,7 @@ router.post("/analyses", async (req, res): Promise<void> => {
         interviewQuestions: JSON.stringify(result.interviewQuestions || []),
         status: "completed",
       })
+      .where(eq(analysesTable.id, initialAnalysis.id))
       .returning();
 
     await db
@@ -86,7 +99,7 @@ router.post("/analyses", async (req, res): Promise<void> => {
       .where(eq(usersTable.id, userId));
 
     res.status(201).json({
-      ...analysis,
+      ...finalAnalysis,
       keywordsMatched: result.keywordsMatched,
       keywordsMissing: result.keywordsMissing,
     });
@@ -160,6 +173,57 @@ router.delete("/analyses/:id", async (req, res): Promise<void> => {
   }
 
   res.sendStatus(204);
+});
+
+import PDFDocument from "pdfkit";
+
+router.get("/analyses/:id/export", async (req, res): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const params = GetAnalysisParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [analysis] = await db
+    .select()
+    .from(analysesTable)
+    .where(eq(analysesTable.id, params.data.id))
+    .limit(1);
+
+  if (!analysis || analysis.userId !== req.user.id) {
+    res.status(404).json({ error: "Analysis not found" });
+    return;
+  }
+
+  try {
+    const doc = new PDFDocument({ margin: 50 });
+    const filename = `Tailored_Resume_${analysis.jobTitle.replace(/\s+/g, "_")}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).font("Helvetica-Bold").text(analysis.jobTitle.toUpperCase(), { align: "center" });
+    doc.moveDown();
+    
+    // Content
+    doc.fontSize(11).font("Helvetica").text(analysis.tailoredResume, {
+      align: "left",
+      lineGap: 2,
+    });
+
+    doc.end();
+  } catch (err) {
+    console.error("PDF Export failed:", err);
+    res.status(500).json({ error: "Failed to generate PDF" });
+  }
 });
 
 export default router;
