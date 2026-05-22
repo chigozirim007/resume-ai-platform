@@ -39,7 +39,7 @@ export async function authMiddleware(
     return;
   }
 
-  const payload = verifySupabaseToken(token);
+  const payload = await verifySupabaseToken(token);
   if (!payload) {
     next();
     return;
