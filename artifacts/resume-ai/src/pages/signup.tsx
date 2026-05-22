@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { supabase } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { Briefcase, UserPlus, ArrowRight, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Briefcase, UserPlus, ArrowRight, Loader2, AlertCircle, X } from "lucide-react";
 
 export default function SignupPage() {
   const [_, setLocation] = useLocation();
@@ -18,25 +18,30 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorModal, setErrorModal] = useState<string | null>(null);
+  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    };
+  }, []);
 
   async function handleEmailSignup(e: React.FormEvent) {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Passwords do not match",
-        description: "Please make sure your passwords match.",
-      });
+      setErrorModal("Please make sure your passwords match.");
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(() => setErrorModal(null), 5000);
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Password too short",
-        description: "Your password must be at least 6 characters long.",
-      });
+      setErrorModal("Your password must be at least 6 characters long.");
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(() => setErrorModal(null), 5000);
       return;
     }
 
@@ -98,11 +103,9 @@ export default function SignupPage() {
         setLocation("/dashboard");
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Sign up failed",
-        description: error.message || "An error occurred during sign up.",
-      });
+      setErrorModal(error.message || "An error occurred during sign up.");
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(() => setErrorModal(null), 5000);
     } finally {
       setIsLoading(false);
     }
@@ -119,11 +122,9 @@ export default function SignupPage() {
 
       if (error) throw error;
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Google login failed",
-        description: error.message || "An error occurred during Google login.",
-      });
+      setErrorModal(error.message || "An error occurred during Google login.");
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(() => setErrorModal(null), 5000);
     }
   }
 
@@ -350,6 +351,44 @@ export default function SignupPage() {
           </CardFooter>
         </Card>
       </motion.div>
+
+      <AnimatePresence>
+        {errorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-zinc-900 border border-red-500/30 rounded-xl shadow-[0_0_40px_rgba(239,68,68,0.2)] max-w-sm w-full relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
+              <button
+                onClick={() => {
+                  setErrorModal(null);
+                  if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+                }}
+                className="absolute top-3 right-3 text-zinc-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="p-6 pt-8 flex flex-col items-center text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <AlertCircle className="h-6 w-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-2">Error</h3>
+                  <p className="text-sm text-zinc-300">{errorModal}</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
