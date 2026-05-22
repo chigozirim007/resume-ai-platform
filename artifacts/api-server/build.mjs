@@ -59,7 +59,8 @@ async function buildAll() {
       "@prisma/client",
       "@mikro-orm/*",
       "@grpc/*",
-      "@swc/*",
+      "@swc/core", // @swc/core has native binaries - keep external
+      // Note: @swc/helpers is intentionally NOT externalized - fontkit (via pdfkit) needs it bundled
       "@aws-sdk/*",
       "@azure/*",
       "@opentelemetry/*",
