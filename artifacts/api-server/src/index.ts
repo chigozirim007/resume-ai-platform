@@ -1,7 +1,10 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 
-const rawPort = process.env.PORT || process.env.API_PORT || "5000";
+const isProd = process.env.NODE_ENV === "production";
+const rawPort = isProd 
+  ? (process.env.PORT || "5000")
+  : (process.env.API_PORT || process.env.PORT || "5000");
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
