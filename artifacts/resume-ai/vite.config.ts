@@ -58,8 +58,8 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        // API server runs on port 8080 per replit.md
-        target: `http://localhost:${process.env.API_PORT || 8080}`,
+        // API server runs on port 5000 by default
+        target: `http://localhost:${process.env.API_PORT || 5000}`,
         changeOrigin: true,
       },
     },
