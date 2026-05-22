@@ -1,16 +1,13 @@
 {
   "cleanUrls": true,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "https://resume-ai-backend-ensy.onrender.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://resume-ai-backend-ensy.onrender.com/api/:path*"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/:path*",
+      "destination": "/"
     }
   ]
 }
