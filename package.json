@@ -1,6 +1,7 @@
 {
   "name": "workspace",
   "version": "0.0.0",
+  "packageManager": "pnpm@10.33.0",
   "license": "MIT",
   "scripts": {
     "dev": "dotenv -e .env -- concurrently \"pnpm --filter @workspace/api-server run dev\" \"pnpm --filter @workspace/resume-ai run dev\"",
