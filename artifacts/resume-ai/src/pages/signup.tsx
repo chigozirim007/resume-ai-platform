@@ -222,7 +222,7 @@ export default function SignupPage() {
             <Link href="/">
               <div className="flex items-center gap-2 font-black text-3xl text-primary cursor-pointer mb-2 drop-shadow-[0_0_15px_rgba(0,230,153,0.4)]">
                 <Briefcase className="h-8 w-8" />
-                MatchFolio
+                TailorFolio
               </div>
             </Link>
           </motion.div>

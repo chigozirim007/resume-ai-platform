@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
           className="prose prose-invert max-w-none text-muted-foreground leading-relaxed"
         >
           <p>
-            This Privacy Policy explains how MatchFolio ("we," "us," or "our") collects, uses, and discloses your personal information when you use our website and services.
+            This Privacy Policy explains how TailorFolio ("we," "us," or "our") collects, uses, and discloses your personal information when you use our website and services.
           </p>
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">1. Information We Collect</h3>

@@ -117,7 +117,7 @@ function ReviewDialog() {
         <DialogHeader>
           <DialogTitle>Share your experience</DialogTitle>
           <DialogDescription>
-            Help others know how MatchFolio worked for you.
+            Help others know how TailorFolio worked for you.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
@@ -127,7 +127,7 @@ function ReviewDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="text">Review</Label>
-            <Textarea id="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="How did MatchFolio help you?" className="min-h-[100px]" required />
+            <Textarea id="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="How did TailorFolio help you?" className="min-h-[100px]" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="score">Match Score achieved (0-100)</Label>
@@ -172,7 +172,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-xl text-primary tracking-tight">
             <Briefcase className="h-5 w-5" />
-            MatchFolio
+            TailorFolio
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:block">Free plan — 3 analyses</span>
@@ -200,7 +200,7 @@ export default function Landing() {
         >
           <motion.div variants={itemVariants}>
             <Badge variant="outline" className="mb-6 border-primary/30 text-primary bg-primary/5 text-xs tracking-wider uppercase backdrop-blur-md">
-              Match your resume to every role
+              Tailor every resume to the role
             </Badge>
           </motion.div>
           <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6 drop-shadow-2xl">
@@ -211,7 +211,7 @@ export default function Landing() {
             {" "}to every job
           </motion.h1>
           <motion.p variants={itemVariants} className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Match your resume to every role. Paste a job description, get a tailored resume, a match score, and a cover letter in under 30 seconds.
+            Tailor every resume to the role. Paste a job description, get a tailored resume, a match score, and a cover letter in under 30 seconds.
           </motion.p>
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/signup">
@@ -389,7 +389,7 @@ export default function Landing() {
           >
             <Star className="h-12 w-12 text-primary/20 mx-auto mb-4" />
             <h3 className="text-2xl font-bold mb-2">No reviews yet</h3>
-            <p className="text-muted-foreground mb-6">Be the first to share your experience with MatchFolio!</p>
+            <p className="text-muted-foreground mb-6">Be the first to share your experience with TailorFolio!</p>
           </motion.div>
         )}
       </section>
@@ -428,10 +428,10 @@ export default function Landing() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 text-lg font-bold text-primary mb-4">
                 <Briefcase className="h-6 w-6" />
-                MatchFolio
+                TailorFolio
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                Match your resume to every role with tailored resumes, match scores, and role-focused cover letters.
+                Tailor every resume to the role with tailored resumes, match scores, and role-focused cover letters.
               </p>
             </div>
             
@@ -464,7 +464,7 @@ export default function Landing() {
 
           <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} MatchFolio. All rights reserved.
+              &copy; {new Date().getFullYear()} TailorFolio. All rights reserved.
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <CheckCircle className="h-4 w-4 text-primary" />

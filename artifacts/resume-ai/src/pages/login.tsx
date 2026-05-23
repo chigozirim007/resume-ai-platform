@@ -186,7 +186,7 @@ export default function LoginPage() {
             <Link href="/">
               <div className="flex items-center gap-2 font-black text-3xl text-primary cursor-pointer mb-2 drop-shadow-[0_0_15px_rgba(0,230,153,0.4)]">
                 <Briefcase className="h-8 w-8" />
-                MatchFolio
+                TailorFolio
               </div>
             </Link>
           </motion.div>
@@ -274,7 +274,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="relative z-10 pt-2 pb-6">
             <div className="text-sm text-muted-foreground text-center w-full">
-              New to MatchFolio?{" "}
+              New to TailorFolio?{" "}
               <Link href="/signup" className="text-primary font-bold hover:underline">
                 Create an account
               </Link>
