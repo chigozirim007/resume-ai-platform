@@ -186,11 +186,11 @@ export default function LoginPage() {
             <Link href="/">
               <div className="flex items-center gap-2 font-black text-3xl text-primary cursor-pointer mb-2 drop-shadow-[0_0_15px_rgba(0,230,153,0.4)]">
                 <Briefcase className="h-8 w-8" />
-                ResumeAI
+                MatchFolio
               </div>
             </Link>
           </motion.div>
-          <p className="text-muted-foreground font-medium tracking-wide">Sign in to your professional toolkit</p>
+          <p className="text-muted-foreground font-medium tracking-wide">Match your resume to every role</p>
         </div>
 
         <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] border-t-white/20 relative overflow-hidden group">
@@ -200,7 +200,7 @@ export default function LoginPage() {
           <CardHeader className="space-y-2 relative z-10">
             <CardTitle className="text-3xl font-extrabold tracking-tight">Welcome Back</CardTitle>
             <CardDescription className="text-muted-foreground/80">
-              Enter your credentials to continue your career journey.
+              Enter your credentials to continue building role-ready applications.
             </CardDescription>
           </CardHeader>
           <CardContent className="relative z-10">
@@ -274,7 +274,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="relative z-10 pt-2 pb-6">
             <div className="text-sm text-muted-foreground text-center w-full">
-              New to ResumeAI?{" "}
+              New to MatchFolio?{" "}
               <Link href="/signup" className="text-primary font-bold hover:underline">
                 Create an account
               </Link>

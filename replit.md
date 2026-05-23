@@ -1,4 +1,4 @@
-# ResumeAI
+# MatchFolio
 
 An AI-powered SaaS tool that tailors resumes, scores job matches, and generates cover letters for job seekers.
 

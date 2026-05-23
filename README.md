@@ -1,6 +1,6 @@
-# 🚀 Resume AI - The Ultimate AI-Powered Career Partner
+# MatchFolio - Match your resume to every role
 
-Resume AI is a high-performance, full-stack platform designed to help job seekers tailor their resumes and cover letters using the power of Google Gemini AI. Transitioned from Stripe to **Paystack** for global accessibility, it features a hyper-dynamic UI and robust backend architecture.
+MatchFolio is a high-performance, full-stack platform designed to help job seekers tailor their resumes and cover letters using the power of Google Gemini AI. Transitioned from Stripe to **Paystack** for global accessibility, it features a hyper-dynamic UI and robust backend architecture.
 
 ---
 

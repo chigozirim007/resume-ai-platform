@@ -10,7 +10,7 @@ export default function ContactSupport() {
           className="mb-12"
         >
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Contact Support</h1>
-          <p className="text-muted-foreground text-lg">We're here to help you get the most out of ResumeAI.</p>
+          <p className="text-muted-foreground text-lg">We're here to help you get the most out of MatchFolio.</p>
         </motion.div>
 
         <motion.div

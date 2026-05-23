@@ -222,11 +222,11 @@ export default function SignupPage() {
             <Link href="/">
               <div className="flex items-center gap-2 font-black text-3xl text-primary cursor-pointer mb-2 drop-shadow-[0_0_15px_rgba(0,230,153,0.4)]">
                 <Briefcase className="h-8 w-8" />
-                ResumeAI
+                MatchFolio
               </div>
             </Link>
           </motion.div>
-          <p className="text-muted-foreground font-medium tracking-wide">Join thousands of smart job seekers</p>
+          <p className="text-muted-foreground font-medium tracking-wide">Match your resume to every role</p>
         </div>
 
         <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] border-t-white/20 relative overflow-hidden">

@@ -1,6 +1,6 @@
-# Contributing to Resume AI
+# Contributing to MatchFolio
 
-First off, thank you for considering contributing to Resume AI! It's people like you that make the open-source community such a great place.
+First off, thank you for considering contributing to MatchFolio! It's people like you that make the open-source community such a great place.
 
 ## 🌊 Drips.network Wave
 This project is currently part of an active Drips Wave. Contributors can earn rewards by solving issues documented in our backlog.

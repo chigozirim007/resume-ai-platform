@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
           className="prose prose-invert max-w-none text-muted-foreground leading-relaxed"
         >
           <p>
-            This Privacy Policy explains how ResumeAI ("we," "us," or "our") collects, uses, and discloses your personal information when you use our website and services.
+            This Privacy Policy explains how MatchFolio ("we," "us," or "our") collects, uses, and discloses your personal information when you use our website and services.
           </p>
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">1. Information We Collect</h3>
@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
             We use the information we collect to:
           </p>
           <ul className="list-disc pl-6 space-y-2 mt-4">
-            <li>Provide, maintain, and improve our AI resume tailoring services.</li>
+            <li>Provide, maintain, and improve our AI resume matching services.</li>
             <li>Process transactions and send related information (e.g., confirmations, receipts).</li>
             <li>Send technical notices, updates, security alerts, and support messages.</li>
             <li>Respond to your comments, questions, and customer service requests.</li>

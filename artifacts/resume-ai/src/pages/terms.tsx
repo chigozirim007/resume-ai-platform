@@ -20,7 +20,7 @@ export default function TermsOfService() {
           className="prose prose-invert max-w-none text-muted-foreground leading-relaxed"
         >
           <p>
-            Welcome to ResumeAI. By accessing or using our website and services, you agree to be bound by these Terms of Service.
+            Welcome to MatchFolio. By accessing or using our website and services, you agree to be bound by these Terms of Service.
           </p>
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">1. Acceptance of Terms</h3>
@@ -30,7 +30,7 @@ export default function TermsOfService() {
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">2. Description of Service</h3>
           <p>
-            ResumeAI provides AI-powered tools to help users tailor their resumes and cover letters to specific job descriptions. The output generated is provided "as is" and you are solely responsible for reviewing and verifying the accuracy of all generated content before submitting it to an employer.
+            MatchFolio provides AI-powered tools to help users match their resumes and cover letters to specific job descriptions. The output generated is provided "as is" and you are solely responsible for reviewing and verifying the accuracy of all generated content before submitting it to an employer.
           </p>
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">3. User Accounts</h3>
@@ -45,7 +45,7 @@ export default function TermsOfService() {
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">5. Limitation of Liability</h3>
           <p>
-            In no event shall ResumeAI, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
+            In no event shall MatchFolio, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
           </p>
 
           <h3 className="text-foreground font-semibold text-xl mt-8 mb-4">6. Changes</h3>
