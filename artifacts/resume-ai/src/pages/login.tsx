@@ -9,6 +9,24 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Briefcase, ArrowRight, Loader2, AlertCircle, X } from "lucide-react";
 
+function getLoginErrorMessage(error: any, email: string) {
+  const message = String(error?.message ?? "").toLowerCase();
+
+  if (!email.includes("@")) {
+    return "That email address does not look valid. Please check it and try again.";
+  }
+
+  if (message.includes("email not confirmed")) {
+    return "This email exists, but it is not confirmed yet. Please use the confirmation link or create a new account now that confirmation is disabled.";
+  }
+
+  if (message.includes("invalid login credentials")) {
+    return "The email or password is incorrect. Please check both fields and try again.";
+  }
+
+  return error?.message || "Invalid email or password. Please try again.";
+}
+
 export default function LoginPage() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
@@ -45,7 +63,7 @@ export default function LoginPage() {
       });
       setLocation("/dashboard");
     } catch (error: any) {
-      setErrorModal(error.message || "Invalid email or password. Please try again.");
+      setErrorModal(getLoginErrorMessage(error, email));
       if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
       errorTimeoutRef.current = setTimeout(() => {
         setErrorModal(null);

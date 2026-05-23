@@ -24,6 +24,20 @@ interface AuthState {
   logout: () => void;
 }
 
+function supabaseUserToAuthUser(sessionUser: any): AuthUser {
+  const metadata = sessionUser?.user_metadata ?? {};
+  const fullName = typeof metadata.full_name === "string" ? metadata.full_name : "";
+  const [fallbackFirstName, ...fallbackLastNameParts] = fullName.split(" ").filter(Boolean);
+
+  return {
+    id: sessionUser.id,
+    email: sessionUser.email ?? null,
+    firstName: metadata.first_name ?? fallbackFirstName ?? null,
+    lastName: metadata.last_name ?? (fallbackLastNameParts.join(" ") || null),
+    profileImageUrl: metadata.avatar_url ?? null,
+  };
+}
+
 export function useAuth(): AuthState {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,17 +51,21 @@ export function useAuth(): AuthState {
     }
 
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       // Get detailed user info from our backend
       const res = await fetch("/api/auth/user", {
         headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          Authorization: `Bearer ${session?.access_token}`,
         },
       });
       if (!res.ok) throw new Error("Failed to fetch user");
       const data = await res.json();
-      setUser(data.user ?? null);
+      setUser(data.user ?? supabaseUserToAuthUser(sessionUser));
     } catch {
-      setUser(null);
+      setUser(supabaseUserToAuthUser(sessionUser));
     } finally {
       setIsLoading(false);
     }
